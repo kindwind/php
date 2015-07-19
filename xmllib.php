@@ -204,44 +204,11 @@ class mySimpleXml{
                 echo "<br />\n";
                 echo $value."<br />\n";
             }
-            //die();
+            die();
         }
-        /*foreach($this->xmlElement as $key => $value)
-        {
-            echo $key.":".$value["coupled"].",".$value["lineStart"]."-".$value["lineEnd"]."\n";
-        }*/
         fclose($handle);
-        for($i=0;$i<count($messageArray);$i++)
-        {
-            //echo $messageArray[$i]."\n";
-            /*if(preg_match($this->xmlTagEnd,$messageArray[$i])) //pop until start tag
-            {
-            }
-            else if(preg_match($this->xmlTagStart,$messageArray[$i]))
-            {
-                $name = preg_split("/[\s<>]+/",$messageArray[$i])[1];
-                $item = new XmlListNode("");
-                $item->name = $name;
-                $head->next = $item;
-                $this->xmlTreeHead->lastChild = $item;
-                $item->parent = $head;
-                $head = $item;
-            }
-            else
-            {
-                //echo $name."\n";
-                /*$item = new XmlListNode($message);
-                $item->name = $name;
-                if(!$xmlCollection->isStackFull())
-                {
-                    $xmlCollection->push($item);
-                }
-                $i++;*/
-            //}
-        }
-        $this->xmlTree["root"] = "";
         //$this->depth_first_trace($this->xmlTreeHead->next, $this->xmlTreeHead, $this->xmlTree);
-        $this->breadth_first_trace($this->xmlTreeHead->next, $this->xmlTreeHead, $this->xmlTree);
+        $this->breadth_first_trace($this->xmlTreeHead->next, $this->xmlTreeHead, $this->xmlTree, 0);
         //echo $head->name;
         print_r($this->xmlTree);
     }
@@ -277,10 +244,11 @@ class mySimpleXml{
         }
     }
     
-    public function breadth_first_trace($root, $xmlParentNode, &$parentArray)
+    public function breadth_first_trace($root, $xmlParentNode, &$parentArray, $n)
     {
         if($root)
         {
+            $repeat = false;
             if($root->data!='')
             {
                 $childArray[$root->name] = $root->data;
@@ -289,43 +257,51 @@ class mySimpleXml{
             {
                 $childArray = array();
             }
-            //$parentArray[$xmlParentNode->name][$root->name] = $root->data;
-            /*if($root->data!='')
-            {
-                $parentArray[$xmlParentNode->name][$root->name] = $root->data;
-                //$this->xmlTree[$xmlParentNode->name][$root->name] = $root->data;
-            }
-            else
-            {
-                $parentArray[$xmlParentNode->name][$root->name] = array();
-                //$this->xmlTree[$xmlParentNode->name][$root->name] = array();
-            }*/
-            echo "parent = ".$xmlParentNode->name.", child = ".$root->name."\n";
+            /*echo "parent = ".$xmlParentNode->name.", child = ".$root->name."\n";
             echo "+++++ child array +++++\n";
             print_r($childArray);
             echo "----- child array -----\n";
             echo "+++++ parent array +++++\n";
             print_r($parentArray);
-            echo "----- parent array -----\n\n";
+            echo "----- parent array -----\n\n";*/
             if($root->youngerBrother)
             {
-                $this->breadth_first_trace($root->youngerBrother, $xmlParentNode, $parentArray);
+                $this->breadth_first_trace($root->youngerBrother, $xmlParentNode, $parentArray, $n);
             }
             /*echo "+++++++++++++++++++++++++++++++++No Brothers:+++++++++++++++++++++++++++++++++\n";
             echo "I am ".$root->name.", my parent is ".$xmlParentNode->name."\n";
             echo "---------------------------------No Brothers:---------------------------------\n\n";*/
             if($root->next)
             {           
-                $this->breadth_first_trace($root->next, $root, $childArray);
+                $this->breadth_first_trace($root->next, $root, $childArray, $n);
             }
-            if($root->data!='')
+            foreach($parentArray as $key => $value)
             {
-                $parentArray[$root->name] = $root->data;
+                if($key == $root->name)
+                {
+                    echo $root->name."\n";
+                    $repeat = true;
+                    //print_r($parentArray);
+                }
+            }
+            if(!$repeat)
+            {
+                if($root->data!='')
+                {
+                    $parentArray[$root->name] = $root->data;
+                }
+                else
+                {
+                    $parentArray[$root->name] = array_reverse($childArray);
+                }
             }
             else
             {
-                $parentArray[$root->name] = array_reverse($childArray);
-            }            
+                $tempForRepeat = $parentArray[$root->name];
+                unset($parentArray[$root->name]);
+                $parentArray[$root->name][$n++] = (($root->data!='')?$root->data:array_reverse($childArray));
+                $parentArray[$root->name][$n++] = $tempForRepeat;
+            }
             /*echo "parent = ".$xmlParentNode->name.", child = ".$root->name."\n";
             echo "+++++ child array +++++\n";
             print_r($childArray);
