@@ -103,15 +103,18 @@ class myStack {
 
 
 class XmlListNode{
-    /* Data to hold */
-    public $data;
- 
-    /* Link to next node */
-    public $next;    
-    public $lastChild;
-    public $parent;
+    /* XML node name */
     public $name;
-    public $brother;
+    /* XML node Data */
+    public $data; 
+    /* Link to next XML node */
+    public $next;
+    /* last node in XML tree */
+    public $lastChild;
+    /* parent of a XML node*/
+    public $parent;
+    public $youngerBrother;
+    public $olderBrother;
     public $lineInFile;
  
     /* Node constructor */
@@ -122,9 +125,9 @@ class XmlListNode{
         $this->lastChild = NULL;
         $this->parent = NULL;
         $this->name = NULL;
-        $this->brother = NULL;
+        $this->youngerBrother = NULL;
         $this->lineInFile = 0;
-        
+        $this->olderBrother = NULL;
     }
 }
 ?>

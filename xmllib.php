@@ -167,11 +167,12 @@ class mySimpleXml{
                         if($head->next!=NULL)
                         {
                             $head = $head->next;
-                            while($head->brother)
+                            while($head->youngerBrother)
                             {
-                                $head = $head->brother;
+                                $head = $head->youngerBrother;
                             }
-                            $head->brother = $item;
+                            $head->youngerBrother = $item;
+                            $item->olderBrother = $head;
                         }
                         else
                         {
@@ -238,43 +239,106 @@ class mySimpleXml{
                 $i++;*/
             //}
         }
-        //$this->depth_first_trace($this->xmlTreeHead, $this->xmlTree);
-        $this->breadth_first_trace($this->xmlTreeHead->next, $this->xmlTreeHead, $child=array());
+        $this->xmlTree["root"] = "";
+        //$this->depth_first_trace($this->xmlTreeHead->next, $this->xmlTreeHead, $this->xmlTree);
+        $this->breadth_first_trace($this->xmlTreeHead->next, $this->xmlTreeHead, $this->xmlTree);
+        //echo $head->name;
         print_r($this->xmlTree);
-        
     }
     
-    public function depth_first_trace($root, $xmlTree)
+    public function depth_first_trace($root, $xmlParentNode, &$parentArray)
     {
         if($root)
         {
+            if($root->data!='')
+            {
+                $childArray[$root->name] = $root->data;
+            }
+            else
+            {
+                $childArray = array();
+            }
             if($root->next)
             {
-                $this->depth_first_trace($root->next, $xmlTree);
+                $this->breadth_first_trace($root->next, $root, $childArray);
             }
-            if($root->brother)
+            if($root->youngerBrother)
             {
-                $this->depth_first_trace($root->brother, $xmlTree);
+                $this->breadth_first_trace($root->youngerBrother, $xmlParentNode, $parentArray);
             }
-            echo $root->name.":".$root->data."<br/>\n";
+            /*echo "parent = ".$xmlParentNode->name.", child = ".$root->name."\n";
+            echo "+++++ child array +++++\n";
+            print_r($childArray);
+            echo "----- child array -----\n";
+            echo "+++++ parent array +++++\n";
+            print_r($parentArray);
+            echo "----- parent array -----\n\n";*/
+            //echo $root->name.":".$root->data."<br/>\n";
         }
     }
     
-    public function breadth_first_trace($root, $xmlParentNode, $xmlChildNode)
+    public function breadth_first_trace($root, $xmlParentNode, &$parentArray)
     {
         if($root)
         {
-            if($root->brother)
+            if($root->data!='')
             {
-                $this->breadth_first_trace($root->brother, $xmlParentNode, $xmlChildNode);
+                $childArray[$root->name] = $root->data;
             }
+            else
+            {
+                $childArray = array();
+            }
+            //$parentArray[$xmlParentNode->name][$root->name] = $root->data;
+            /*if($root->data!='')
+            {
+                $parentArray[$xmlParentNode->name][$root->name] = $root->data;
+                //$this->xmlTree[$xmlParentNode->name][$root->name] = $root->data;
+            }
+            else
+            {
+                $parentArray[$xmlParentNode->name][$root->name] = array();
+                //$this->xmlTree[$xmlParentNode->name][$root->name] = array();
+            }*/
+            echo "parent = ".$xmlParentNode->name.", child = ".$root->name."\n";
+            echo "+++++ child array +++++\n";
+            print_r($childArray);
+            echo "----- child array -----\n";
+            echo "+++++ parent array +++++\n";
+            print_r($parentArray);
+            echo "----- parent array -----\n\n";
+            if($root->youngerBrother)
+            {
+                $this->breadth_first_trace($root->youngerBrother, $xmlParentNode, $parentArray);
+            }
+            /*echo "+++++++++++++++++++++++++++++++++No Brothers:+++++++++++++++++++++++++++++++++\n";
+            echo "I am ".$root->name.", my parent is ".$xmlParentNode->name."\n";
+            echo "---------------------------------No Brothers:---------------------------------\n\n";*/
             if($root->next)
-            {
-                $this->breadth_first_trace($root->next, $xmlParentNode, $xmlChildNode);
+            {           
+                $this->breadth_first_trace($root->next, $root, $childArray);
             }
+            if($root->data!='')
+            {
+                $parentArray[$root->name] = $root->data;
+            }
+            else
+            {
+                $parentArray[$root->name] = array_reverse($childArray);
+            }            
+            /*echo "parent = ".$xmlParentNode->name.", child = ".$root->name."\n";
+            echo "+++++ child array +++++\n";
+            print_r($childArray);
+            echo "----- child array -----\n";
+            echo "+++++ parent array +++++\n";
+            print_r($parentArray);
+            echo "----- parent array -----\n\n";*/
+            /*echo "+++++++++++++++++++++++++++++++++No Children:+++++++++++++++++++++++++++++++++\n";
+            echo "I am ".$root->name.", my parent is ".$xmlParentNode->name."\n";
+            echo "---------------------------------No Children:---------------------------------\n\n";*/
             //print_r($item);
             //echo "<br/>\n";
-            echo $root->name.":".$root->data."<br/>\n";
+            //echo $root->name.":".$root->data."<br/>\n";
         }
     }
 }
