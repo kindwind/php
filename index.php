@@ -31,8 +31,26 @@ include("xmllib.php");
 if (file_exists('test.xml')) {
     $xml = simplexml_load_file('test.xml');
     //print_r($xml);
-    $myxml = new mySimpleXml('test.xml');
-    $myxml->mySimpleXml_load_file();
+    $mySimpleXml = new MySimpleXml('test.xml');
+    $xmlTree = $mySimpleXml->mySimpleXml_load_file();
+    //$mySimpleXml->MySimpleXml_inser_xmlNode("<test>test</test>");
+    $mySimpleXml->MySimpleXml_save_file('test.xml');
+    //print_r($xmlTree);
+    /*$fp = fopen('test.xml', 'r');
+
+    $contents = '';
+
+    while (!feof($fp)) {
+        $contents .= fread($fp, 8192);
+    }
+    echo $contents;
+    fseek($fp, 0);
+    
+    fclose($fp);*/
+    //$file = file_get_contents('test.xml', true);
+    //echo $file;
+    //echo getmyinode();
+    
 } else {
     exit('Failed to open test.xml.');
 }

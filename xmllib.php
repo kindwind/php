@@ -22,7 +22,7 @@ class mySimpleXml{
         //echo $this->backTrace[0]["line"]."\n";
     }
 
-    public function mySimpleXml_load_file(){
+    public function MySimpleXml_load_file(){
         $contentQueue = new myQueue();
         $handle = fopen($this->file, "r");
         $contents = '';
@@ -208,9 +208,137 @@ class mySimpleXml{
         }
         fclose($handle);
         //$this->depth_first_trace($this->xmlTreeHead->next, $this->xmlTreeHead, $this->xmlTree);
-        $this->breadth_first_trace($this->xmlTreeHead->next, $this->xmlTreeHead, $this->xmlTree, 0);
+        //$this->breadth_first_trace($this->xmlTreeHead->next, $this->xmlTreeHead, $this->xmlTree, 0);
         //echo $head->name;
-        print_r($this->xmlTree);
+        //print_r($this->xmlTree);
+        return $this->xmlTree;
+    }
+    
+    public function MySimpleXml_inser_xmlNode(){
+        $contentQueue = new myQueue();
+        $handle = fopen($this->file, "r");
+        $contents = '';
+        $message = '';
+
+        while (!feof($handle))
+        {
+            $contents = fread($handle, 1);
+            if($contents=="\r")
+            {
+                $contents = fread($handle, 1);
+                if($contents=="\n");
+                {
+                    $linenum++;
+                    continue;
+                }
+            }
+            $message = '';
+            //echo $contents;
+            if($contents=="<")
+            {
+                if(!$CommentStart)
+                {
+                    $LessThanSymbolAppear = true;
+                    while(!$contentQueue->isQueueEmpty())
+                    {
+                        $message.= $contentQueue->dequeue();
+                    }
+                }
+                //echo $message;
+                $contentQueue->enqueue($contents);
+            }
+            else if ($contents==">")
+            {
+                $contentQueue->enqueue($contents);
+                if($LessThanSymbolAppear) //dequeue all contents
+                {   
+                    while(!$contentQueue->isQueueEmpty())
+                    {
+                        $message.= $contentQueue->dequeue();
+                    }
+                    $LessThanSymbolAppear = false;
+                }
+                else if($CommentStart&&$HyphenSymbolCnt>=4)
+                {  
+                    while(!$contentQueue->isQueueEmpty())
+                    {
+                        $message.= $contentQueue->dequeue();
+                    }
+                    $CommentStart = false;
+                    $HyphenSymbolCnt = 0;
+                }
+                //echo $message;
+            }
+            else if($contents=='-'&&$CommentStart)
+            {
+                $HyphenSymbolCnt++;
+                $contentQueue->enqueue($contents);
+            }
+            else
+            {
+                $contentQueue->enqueue($contents);
+                if($contents=='!'&&$LessThanSymbolAppear)
+                {
+                    $LessThanSymbolAppear = false;
+                    $CommentStart = true;
+                }
+            }
+            $message = trim ($message, "\t\n\r\0\x0B");
+        }
+        
+        if(count($errorMessage)>0)
+        {
+            foreach($errorMessage as $key => $value)
+            {
+                echo "<br />\n";
+                echo $value."<br />\n";
+            }
+            die();
+        }
+        fclose($handle);
+    }
+    
+    public function MySimpleXml_save_file($file)
+    {
+        $content = '';
+        $this->create_xml_by_DFS($this->xmlTreeHead->next, $this->xmlTreeHead, $content);
+        //echo $content;
+        if (is_writable($file))
+        {
+            if (!$handle = fopen($file, 'w'))
+            {
+                echo "Cannot open file ($file)";
+                exit;
+            }
+
+            if (fwrite($handle, $content) === FALSE) {
+                echo "Cannot write to file ($file)";
+                exit;
+            }
+            fclose($handle);
+        }
+        else
+        {
+            echo "The file $file is not writable";
+        }
+    }
+    
+    public function create_xml_by_DFS($root, $xmlParentNode, &$xmlContent)
+    {
+        if($root)
+        {
+            $xmlContent .= "<".$root->name.">";
+            if($root->next)
+            {
+                $this->create_xml_by_DFS($root->next, $root, $xmlContent);
+            }
+            $xmlContent .= $root->data;
+            $xmlContent .= "</".$root->name.">";
+            if($root->youngerBrother)
+            {
+                $this->create_xml_by_DFS($root->youngerBrother, $xmlParentNode, $xmlContent);
+            }
+        }
     }
     
     public function depth_first_trace($root, $xmlParentNode, &$parentArray)
@@ -279,8 +407,9 @@ class mySimpleXml{
             {
                 if($key == $root->name)
                 {
-                    echo $root->name."\n";
+                    //echo $root->name."\n";
                     $repeat = true;
+                    break;
                     //print_r($parentArray);
                 }
             }
